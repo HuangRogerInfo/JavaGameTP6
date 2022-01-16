@@ -26,172 +26,352 @@ public class Generator {
 	public static void generateLevel(String fileName, Grid inputGrid) {
 
 		try {
-			Random r = new Random();
 
-			// On remplit la grille de pieces aleatoires
+			Random r = new Random();
 			for (int i = 0; i < inputGrid.getWidth(); i++) {
 				for (int j = 0; j < inputGrid.getHeight(); j++) {
-					Piece p_courante = inputGrid.getPiece(i, j);
+
+					// On pose la premiere piece
+					if (i == 0 && j == 0) {
+						inputGrid.setPiece(i, j, new Piece(i, j, PieceType.ONECONN, Orientation.EAST));
+						j++;
+					}
+
+					Piece p_courante = new Piece(i, j);
 					HashSet<PieceType> PossibleTypes = new HashSet<PieceType>();
+					HashSet<Orientation> contraintes = new HashSet<Orientation>();
+					HashSet<Orientation> notContainsContraintes = new HashSet<Orientation>();
+					ArrayList<Piece> PossiblePiece = new ArrayList<Piece>();
 
 					if (inputGrid.isCorner(i, j)) {
+						// Type possible
 						for (PieceType type : PieceType.values()) {
 							if ((type == PieceType.ONECONN || type == PieceType.LTYPE)) {
 								PossibleTypes.add(type);
+							}
+						}
+
+						// Contraintes de connecteurs
+						if (i == 0 && j == 0) {
+							// Top left corner
+							System.out.println("corner_top_left");
+
+							notContainsContraintes.add(Orientation.NORTH);
+							notContainsContraintes.add(Orientation.WEST);
+
+							if (inputGrid.rightNeighbor(p_courante) != null) {
+								if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+									contraintes.add(Orientation.EAST);
+								} else {
+									notContainsContraintes.add(Orientation.EAST);
+								}
+							}
+
+							if (inputGrid.bottomNeighbor(p_courante) != null) {
+								if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+									contraintes.add(Orientation.SOUTH);
+								} else {
+									notContainsContraintes.add(Orientation.SOUTH);
+								}
+							}
+						}
+
+						if (i == 0 && j == inputGrid.getWidth() - 1) {
+							// Top right corner
+							System.out.println("corner_top_right");
+
+							notContainsContraintes.add(Orientation.NORTH);
+							notContainsContraintes.add(Orientation.EAST);
+
+							if (inputGrid.leftNeighbor(p_courante) != null) {
+								if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+									contraintes.add(Orientation.WEST);
+								} else {
+									notContainsContraintes.add(Orientation.WEST);
+								}
+							}
+
+							if (inputGrid.bottomNeighbor(p_courante) != null) {
+								if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+									contraintes.add(Orientation.SOUTH);
+								} else {
+									notContainsContraintes.add(Orientation.SOUTH);
+								}
+							}
+						}
+
+						if (i == inputGrid.getHeight() - 1 && j == 0) {
+							// Bot left corner
+							System.out.println("corner_bot_left");
+
+							notContainsContraintes.add(Orientation.WEST);
+							notContainsContraintes.add(Orientation.SOUTH);
+
+							if (inputGrid.rightNeighbor(p_courante) != null) {
+								if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+									contraintes.add(Orientation.EAST);
+								} else {
+									notContainsContraintes.add(Orientation.EAST);
+								}
+							}
+
+							if (inputGrid.topNeighbor(p_courante) != null) {
+								if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+									contraintes.add(Orientation.NORTH);
+								} else {
+									notContainsContraintes.add(Orientation.NORTH);
+								}
+							}
+
+						}
+
+						if (i == inputGrid.getHeight() - 1 && j == inputGrid.getWidth() - 1) {
+							// Bot right corner
+							System.out.println("corner_bot_right");
+
+							notContainsContraintes.add(Orientation.EAST);
+							notContainsContraintes.add(Orientation.SOUTH);
+
+							if (inputGrid.leftNeighbor(p_courante) != null) {
+								if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+									contraintes.add(Orientation.WEST);
+								} else {
+									notContainsContraintes.add(Orientation.WEST);
+								}
+							}
+
+							if (inputGrid.topNeighbor(p_courante) != null) {
+								if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+									contraintes.add(Orientation.NORTH);
+								} else {
+									notContainsContraintes.add(Orientation.NORTH);
+								}
 							}
 						}
 					}
 
 					else if (inputGrid.isBorderLine(i, j)) {
 
+						// Type possible
 						for (PieceType type : PieceType.values()) {
 							if (type != PieceType.FOURCONN) {
 								PossibleTypes.add(type);
 							}
 						}
-					}
 
-					else if (inputGrid.isBorderColumn(i, j)) {
-						for (PieceType type : PieceType.values()) {
-							if (type != PieceType.FOURCONN) {
-								PossibleTypes.add(type);
-							}
-						}
-					}
+						// Contraintes de connecteurs
+						if (i == 0) {
+							// Top
+							System.out.println("borderline_top");
 
-					else {
-						for (PieceType type : PieceType.values()) {
-								PossibleTypes.add(type);
-						}
-					}
-			
-					ArrayList<PieceType> types = new ArrayList<PieceType>(PossibleTypes);
-					int index = r.nextInt(types.size());
+							notContainsContraintes.add(Orientation.NORTH);
 
-					Piece p = new Piece(i, j, types.get(index), Orientation.getOrifromValue(r.nextInt(4)));
-					inputGrid.setPiece(i, j, p);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		// On arrange pour que la grille soit resolvable
-		try {
-			Random r = new Random();
-
-			for (int i = 0; i < inputGrid.getWidth(); i++) {
-				for (int j = 0; j < inputGrid.getHeight(); j++) {
-
-					Piece p_courante = inputGrid.getPiece(i, j);
-					HashSet<Piece> voisins = new HashSet<Piece>();
-					HashSet<PieceType> PossibleTypes = new HashSet<PieceType>();
-
-					System.out.println(i + "/" + j);
-
-					if (inputGrid.existNeighbour(p_courante)) {
-
-						if (inputGrid.isCorner(i, j)) {
-							// Top left corner
-							if (i == 0 && j == 0) {
-								voisins.add(inputGrid.rightNeighbor(p_courante));
-								voisins.add(inputGrid.bottomNeighbor(p_courante));
-							}
-
-							// Top right corner
-							if (i == 0 && j == inputGrid.getWidth() - 1) {
-								voisins.add(inputGrid.leftNeighbor(p_courante));
-								voisins.add(inputGrid.bottomNeighbor(p_courante));
-							}
-
-							// Bot left corner
-							if (i == inputGrid.getHeight() - 1 && j == 0) {
-								voisins.add(inputGrid.rightNeighbor(p_courante));
-								voisins.add(inputGrid.topNeighbor(p_courante));
-							}
-
-							// Bot right corner
-							if (i == inputGrid.getHeight() - 1 && j == inputGrid.getWidth() - 1) {
-								voisins.add(inputGrid.leftNeighbor(p_courante));
-								voisins.add(inputGrid.topNeighbor(p_courante));
-							}
-
-							int nb_connectors = voisins.size();
-
-							System.out.println("nb=" + nb_connectors);
-
-							for (PieceType type : PieceType.values()) {
-								if (type.getNbConnectors() == nb_connectors
-										&& (type == PieceType.ONECONN || type == PieceType.LTYPE)) {
-									PossibleTypes.add(type);
+							if (inputGrid.rightNeighbor(p_courante) != null) {
+								if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+									contraintes.add(Orientation.EAST);
+								} else {
+									notContainsContraintes.add(Orientation.EAST);
 								}
 							}
-						}
 
-						else if (inputGrid.isBorderLine(i, j)) {
-							voisins.add(inputGrid.bottomNeighbor(p_courante));
-							voisins.add(inputGrid.topNeighbor(p_courante));
-
-							if (i == 0) {
-								voisins.add(inputGrid.rightNeighbor(p_courante));
-							} else {
-								voisins.add(inputGrid.leftNeighbor(p_courante));
-							}
-
-							int nb_connectors = voisins.size();
-
-							for (PieceType type : PieceType.values()) {
-								if (type.getNbConnectors() == nb_connectors && type != PieceType.FOURCONN) {
-									PossibleTypes.add(type);
+							if (inputGrid.leftNeighbor(p_courante) != null) {
+								if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+									contraintes.add(Orientation.WEST);
+								} else {
+									notContainsContraintes.add(Orientation.WEST);
 								}
 							}
-						}
 
-						else if (inputGrid.isBorderColumn(i, j)) {
-							voisins.add(inputGrid.leftNeighbor(p_courante));
-							voisins.add(inputGrid.rightNeighbor(p_courante));
-
-							if (j == 0) {
-								voisins.add(inputGrid.bottomNeighbor(p_courante));
-							} else {
-								voisins.add(inputGrid.topNeighbor(p_courante));
-							}
-
-							int nb_connectors = voisins.size();
-
-							for (PieceType type : PieceType.values()) {
-								if (type.getNbConnectors() == nb_connectors && type != PieceType.FOURCONN) {
-									PossibleTypes.add(type);
+							if (inputGrid.bottomNeighbor(p_courante) != null) {
+								if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+									contraintes.add(Orientation.SOUTH);
+								} else {
+									notContainsContraintes.add(Orientation.SOUTH);
 								}
 							}
 						}
 
 						else {
-							voisins.add(inputGrid.leftNeighbor(p_courante));
-							voisins.add(inputGrid.rightNeighbor(p_courante));
-							voisins.add(inputGrid.topNeighbor(p_courante));
-							voisins.add(inputGrid.bottomNeighbor(p_courante));
+							// Bot
+							System.out.println("borderline_bot");
 
-							int nb_connectors = voisins.size();
+							notContainsContraintes.add(Orientation.SOUTH);
 
-							for (PieceType type : PieceType.values()) {
-								if (type.getNbConnectors() == nb_connectors) {
-									PossibleTypes.add(type);
+							if (inputGrid.rightNeighbor(p_courante) != null) {
+								if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+									contraintes.add(Orientation.EAST);
+								} else {
+									notContainsContraintes.add(Orientation.EAST);
+								}
+							}
+
+							if (inputGrid.leftNeighbor(p_courante) != null) {
+								if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+									contraintes.add(Orientation.WEST);
+								} else {
+									notContainsContraintes.add(Orientation.WEST);
+								}
+							}
+
+							if (inputGrid.topNeighbor(p_courante) != null) {
+								if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+									contraintes.add(Orientation.NORTH);
+								} else {
+									notContainsContraintes.add(Orientation.NORTH);
 								}
 							}
 						}
-
-					} else {
-						PossibleTypes.add(PieceType.VOID);
 					}
 
-					System.out.println(voisins.size());
+					else if (inputGrid.isBorderColumn(i, j)) {
+						// Type possible
+						for (PieceType type : PieceType.values()) {
+							if (type != PieceType.FOURCONN) {
+								PossibleTypes.add(type);
+							}
+						}
 
-					ArrayList<PieceType> types = new ArrayList<PieceType>(PossibleTypes);
-					int index = r.nextInt(types.size());
+						// Contraintes de connecteurs
+						if (j == 0) {
+							// Left
+							System.out.println("bordercolum_left");
 
-					Piece p = new Piece(i, j, types.get(index), Orientation.getOrifromValue(r.nextInt(4)));
-					inputGrid.setPiece(i, j, p);
+							notContainsContraintes.add(Orientation.WEST);
+
+							if (inputGrid.topNeighbor(p_courante) != null) {
+								if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+									contraintes.add(Orientation.NORTH);
+								} else {
+									notContainsContraintes.add(Orientation.NORTH);
+								}
+							}
+
+							if (inputGrid.bottomNeighbor(p_courante) != null) {
+								if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+									contraintes.add(Orientation.SOUTH);
+								} else {
+									notContainsContraintes.add(Orientation.SOUTH);
+								}
+							}
+
+							if (inputGrid.rightNeighbor(p_courante) != null) {
+								if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+									contraintes.add(Orientation.EAST);
+								} else {
+									notContainsContraintes.add(Orientation.EAST);
+								}
+							}
+						} else {
+							// Right
+							System.out.println("bordercolum_right");
+
+							notContainsContraintes.add(Orientation.EAST);
+
+							if (inputGrid.topNeighbor(p_courante) != null) {
+								if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+									contraintes.add(Orientation.NORTH);
+								} else {
+									notContainsContraintes.add(Orientation.NORTH);
+								}
+							}
+
+							if (inputGrid.bottomNeighbor(p_courante) != null) {
+								if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+									contraintes.add(Orientation.SOUTH);
+								} else {
+									notContainsContraintes.add(Orientation.SOUTH);
+								}
+							}
+
+							if (inputGrid.leftNeighbor(p_courante) != null) {
+								if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+									contraintes.add(Orientation.WEST);
+								} else {
+									notContainsContraintes.add(Orientation.WEST);
+								}
+							}
+						}
+					}
+
+					else {
+						System.out.println("Inside");
+						// Type possible
+						for (PieceType type : PieceType.values()) {
+							PossibleTypes.add(type);
+						}
+
+						// Contraintes de connecteurs
+						if (inputGrid.topNeighbor(p_courante) != null) {
+							if (inputGrid.topNeighbor(p_courante).getConnectors().contains(Orientation.SOUTH)) {
+								contraintes.add(Orientation.NORTH);
+							} else {
+								notContainsContraintes.add(Orientation.NORTH);
+							}
+						}
+
+						if (inputGrid.bottomNeighbor(p_courante) != null) {
+							if (inputGrid.bottomNeighbor(p_courante).getConnectors().contains(Orientation.NORTH)) {
+								contraintes.add(Orientation.SOUTH);
+							} else {
+								notContainsContraintes.add(Orientation.SOUTH);
+							}
+						}
+
+						if (inputGrid.leftNeighbor(p_courante) != null) {
+							if (inputGrid.leftNeighbor(p_courante).getConnectors().contains(Orientation.EAST)) {
+								contraintes.add(Orientation.WEST);
+							} else {
+								notContainsContraintes.add(Orientation.WEST);
+							}
+						}
+
+						if (inputGrid.rightNeighbor(p_courante) != null) {
+							if (inputGrid.rightNeighbor(p_courante).getConnectors().contains(Orientation.WEST)) {
+								contraintes.add(Orientation.EAST);
+							} else {
+								notContainsContraintes.add(Orientation.EAST);
+							}
+						}
+					}
+
+					System.out.println("types = " + PossibleTypes);
+					System.out.println("Contains = " + contraintes);
+					System.out.println("NotContains = " + notContainsContraintes);
+
+					// Piece Possibles en fonction des contraintes de connecteurs
+					for (PieceType type : PossibleTypes) {
+						for (Orientation orientation : Orientation.values()) {
+							Piece p = new Piece(i, j, type, orientation);
+
+							HashSet<Orientation> connecteurs = new HashSet<>();
+							for (Orientation o : p.getConnectors()) {
+								connecteurs.add(o);
+							}
+
+							if (contraintes.size() != 0) {
+								if (!(p.getType().equals(PieceType.VOID))) {
+									if (connecteurs.containsAll(contraintes)) {
+										PossiblePiece.add(p);
+									}
+								}
+							} else {
+								PossiblePiece.add(p);
+							}
+						}
+					}
+
+					for (Orientation forbiddenConnector : notContainsContraintes) {
+						PossiblePiece.removeIf(p -> p.getConnectors().contains(forbiddenConnector));
+					}
+
+					// System.out.println("PossiblePiece = " + PossiblePiece);
+
+					if (PossiblePiece.size() == 0) {
+						inputGrid.setPiece(i, j, new Piece(i, j));
+					} else {
+						int index = r.nextInt(PossiblePiece.size());
+						inputGrid.setPiece(i, j, PossiblePiece.get(index));
+					}
 				}
 			}
 		} catch (Exception e) {

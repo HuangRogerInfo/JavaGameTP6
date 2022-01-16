@@ -122,43 +122,6 @@ public class Grid {
 
 	}
 
-	public boolean existNeighbour(Piece p) {
-		boolean result = false;
-		for (Orientation o : Orientation.values()) {
-			switch (o) {
-				case NORTH:
-					if (topNeighbor(p) != null) {
-						if (topNeighbor(p).getType() != PieceType.VOID) {
-							result = true;
-						}
-					}
-
-				case EAST:
-					if (rightNeighbor(p) != null) {
-						if (rightNeighbor(p).getType() != PieceType.VOID) {
-							result = true;
-						}
-					}
-				case SOUTH:
-					if (bottomNeighbor(p) != null) {
-						if (bottomNeighbor(p).getType() != PieceType.VOID) {
-							result = true;
-						}
-					}
-
-				case WEST:
-					if (leftNeighbor(p) != null) {
-						if (leftNeighbor(p).getType() != PieceType.VOID) {
-							result = true;
-						}
-					}
-
-			}
-
-		}
-		return result;
-	}
-
 	/**
 	 * Check if a piece has a neighbour for its connectors for one orientation
 	 * 
@@ -543,9 +506,7 @@ public class Grid {
 	public Piece leftNeighbor(Piece p) {
 
 		if (p.getPosX() > 0) {
-			if (this.getPiece(p.getPosY(), p.getPosX() - 1).getType() != PieceType.VOID) {
-				return this.getPiece(p.getPosY(), p.getPosX() - 1);
-			}
+			return this.getPiece(p.getPosY(), p.getPosX() - 1);
 		}
 		return null;
 	}
@@ -559,9 +520,7 @@ public class Grid {
 	public Piece topNeighbor(Piece p) {
 
 		if (p.getPosY() > 0) {
-			if (this.getPiece(p.getPosY() - 1, p.getPosX()).getType() != PieceType.VOID) {
-				return this.getPiece(p.getPosY() - 1, p.getPosX());
-			}
+			return this.getPiece(p.getPosY() - 1, p.getPosX());
 		}
 		return null;
 	}
@@ -574,9 +533,7 @@ public class Grid {
 	 */
 	public Piece rightNeighbor(Piece p) {
 		if (p.getPosX() < this.getWidth() - 1) {
-			if (this.getPiece(p.getPosY(), p.getPosX() + 1).getType() != PieceType.VOID) {
-				return this.getPiece(p.getPosY(), p.getPosX() + 1);
-			}
+			return this.getPiece(p.getPosY(), p.getPosX() + 1);
 		}
 		return null;
 	}
@@ -589,9 +546,7 @@ public class Grid {
 	 */
 	public Piece bottomNeighbor(Piece p) {
 		if (p.getPosY() < this.getHeight() - 1) {
-			if (this.getPiece(p.getPosY() + 1, p.getPosX()).getType() != PieceType.VOID) {
-				return this.getPiece(p.getPosY() + 1, p.getPosX());
-			}
+			return this.getPiece(p.getPosY() + 1, p.getPosX());
 		}
 		return null;
 	}
